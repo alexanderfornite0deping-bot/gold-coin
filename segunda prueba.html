@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>🪙 Atrapa las monedas</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 20px 0 5px;
+      color: #fff;
+    }
+
+    #puntos {
+      font-size: 24px;
+      color: #00ff88;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    #juego {
+      width: 600px;
+      height: 400px;
+      background: #222;
+      border: 3px solid #00ff88;
+      margin: 20px auto;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 20px #00ff8844;
+    }
+
+    #jugador {
+      width: 30px;
+      height: 30px;
+      background: #00aaff;
+      border-radius: 6px;
+      position: absolute;
+      left: 285px;
+      top: 185px;
+      box-shadow: 0 0 12px #00aaff;
+    }
+
+    #moneda {
+      width: 22px;
+      height: 22px;
+      background: gold;
+      border: 2px solid #fff176;
+      border-radius: 50%;
+      position: absolute;
+      left: 100px;
+      top: 100px;
+      box-shadow: 0 0 12px gold;
+    }
+
+    #mensaje {
+      height: 25px;
+      color: gold;
+      font-weight: bold;
+    }
+
+    .recogida {
+      animation: recoger 0.2s ease;
+    }
+
+    @keyframes recoger {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.5);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    p {
+      color: #ccc;
+    }
+
+    @media (max-width: 650px) {
+      #juego {
+        width: 90vw;
+        height: 60vw;
+        max-height: 400px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>🪙 Atrapa las monedas</h1>
+
+  <div id="puntos">Puntos: 0</div>
+
+  <div id="juego">
+    <div id="jugador"></div>
+    <div id="moneda"></div>
+  </div>
+
+  <div id="mensaje"></div>
+
+  <p>
+    Usa las flechas ⬆️ ⬇️ ⬅️ ➡️ para moverte
+  </p>
+
+  <script>
+    const juego = document.getElementById("juego");
+    const jugador = document.getElementById("jugador");
+    const moneda = document.getElementById("moneda");
+    const puntosTexto = document.getElementById("puntos");
+    const mensaje = document.getElementById("mensaje");
+
+    // Posición inicial del jugador
+    let x = 285;
+    let y = 185;
+
+    // Posición inicial de la moneda
+    let monedaX = 100;
+    let monedaY = 100;
+
+    let puntos = 0;
+
+    const velocidad = 5;
+
+    // Teclas presionadas
+    const teclas = {};
+
+    document.addEventListener("keydown", function(e) {
+      teclas[e.key] = true;
+
+      // Evita que las flechas muevan la página
+      if (
+        e.key === "ArrowUp" ||
+        e.key === "ArrowDown" ||
+        e.key === "ArrowLeft" ||
+        e.key === "ArrowRight"
+      ) {
+        e.preventDefault();
+      }
+    });
+
+    document.addEventListener("keyup", function(e) {
+      teclas[e.key] = false;
+    });
+
+
+    function mover() {
+
+      // Movimiento
+      if (teclas["ArrowUp"]) {
+        y -= velocidad;
+      }
+
+      if (teclas["ArrowDown"]) {
+        y += velocidad;
+      }
+
+      if (teclas["ArrowLeft"]) {
+        x -= velocidad;
+      }
+
+      if (teclas["ArrowRight"]) {
+        x += velocidad;
+      }
+
+
+      // Tamaño del tablero
+      const anchoJuego = juego.clientWidth;
+      const altoJuego = juego.clientHeight;
+
+      // Tamaño del jugador
+      const anchoJugador = jugador.offsetWidth;
+      const altoJugador = jugador.offsetHeight;
+
+
+      // Evitar que el jugador salga del tablero
+      x = Math.max(
+        0,
+        Math.min(anchoJuego - anchoJugador, x)
+      );
+
+      y = Math.max(
+        0,
+        Math.min(altoJuego - altoJugador, y)
+      );
+
+
+      // Actualizar posición
+      jugador.style.left = x + "px";
+      jugador.style.top = y + "px";
+
+
+      // Comprobar si agarró la moneda
+      comprobarMoneda();
+
+
+      // Continuar el juego
+      requestAnimationFrame(mover);
+    }
+
+
+    function comprobarMoneda() {
+
+      // Rectángulo del jugador
+      const jugadorRect = jugador.getBoundingClientRect();
+
+      // Rectángulo de la moneda
+      const monedaRect = moneda.getBoundingClientRect();
+
+
+      // Detectar si los dos objetos se están tocando
+      const chocan =
+        jugadorRect.left < monedaRect.right &&
+        jugadorRect.right > monedaRect.left &&
+        jugadorRect.top < monedaRect.bottom &&
+        jugadorRect.bottom > monedaRect.top;
+
+
+      if (chocan) {
+
+        // Sumar punto
+        puntos++;
+
+        puntosTexto.textContent = "Puntos: " + puntos;
+
+        mensaje.textContent = "🪙 ¡Moneda atrapada!";
+
+
+        // Efecto visual
+        moneda.classList.remove("recogida");
+
+        // Reiniciar la animación
+        void moneda.offsetWidth;
+
+        moneda.classList.add("recogida");
+
+
+        // Crear nueva posición
+        nuevaMoneda();
+
+
+        // Quitar mensaje después de un momento
+        setTimeout(function() {
+          mensaje.textContent = "";
+        }, 500);
+      }
+    }
+
+
+    function nuevaMoneda() {
+
+      const anchoJuego = juego.clientWidth;
+      const altoJuego = juego.clientHeight;
+
+      const anchoMoneda = moneda.offsetWidth;
+      const altoMoneda = moneda.offsetHeight;
+
+
+      // Crear una posición completamente dentro del tablero
+      monedaX = Math.random() * (anchoJuego - anchoMoneda);
+      monedaY = Math.random() * (altoJuego - altoMoneda);
+
+
+      moneda.style.left = monedaX + "px";
+      moneda.style.top = monedaY + "px";
+    }
+
+
+    // Colocar la moneda inicialmente
+    nuevaMoneda();
+
+    // Comenzar el juego
+    mover();
+
+  </script>
+
+</body>
+</html>
